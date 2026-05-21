@@ -8,13 +8,13 @@ export const useAuth=()=>{
     const handleLogin=async({email,password})=>{
       setLoading(true)  
       try {
-            
             const data=await login({email,password})
+            if (!data?.user) {
+              throw new Error(data?.message || "Login failed");
+            }
             setUser(data.user)
-              
-         } catch (error) {
-            console.log(error)
-         }finally{
+            return data.user
+         } finally{
             setLoading(false)
          }
     }
@@ -22,13 +22,13 @@ export const useAuth=()=>{
     const handleRegistration=async({username,email,password})=>{
       setLoading(true)  
       try {
-            
             const data=await register({username,email,password})
+            if (!data?.user) {
+              throw new Error(data?.message || "Registration failed");
+            }
             setUser(data.user)
-              
-         } catch (error) {
-            console.log(error)
-         }finally{
+            return data.user
+         } finally{
             setLoading(false)
          }
     }

@@ -1,26 +1,57 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { useState } from "react";
-const Login = () => {
- 
-   const {loading,handleLogin}=useAuth()
-   const nav=useNavigate()
-   const [email, setEmail] = useState("")
-   const [password, setpassword] = useState("")
-   const handleSubmit=async(e)=>{
-    e.preventDefault()
-    await handleLogin({email,password})
-    nav('/')
-   }
-    if(loading){
-        return <div className="loader"></div>
+import { useEffect, useState } from "react";
 
+const Login = () => {
+  const { loading, handleLogin, user } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/", { replace: true });
     }
+  }, [loading, user, navigate]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+    try {
+      await handleLogin({ email, password });
+      navigate("/", { replace: true });
+    } catch (err) {
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        "Login failed. Please try again.";
+      setError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading && !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="loader"></div>
+      </div>
+    );
+  }
 
   return (
     
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <form className="w-full max-w-md bg-white shadow-2xl rounded-2xl p-8" onSubmit={handleSubmit}>
+
+        {error && (
+          <div className="mb-4 text-red-500 text-center font-semibold">
+            {error}
+          </div>
+        )}
 
         {/* Heading */}
         <div className="text-center mb-8">
@@ -66,7 +97,7 @@ const Login = () => {
             name="password"
             placeholder="Enter your password"
             className="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition"
-      onChange={(e)=>{setpassword(e.target.value)}}
+      onChange={(e) => setPassword(e.target.value)}
       />
         </div>
 
@@ -80,9 +111,10 @@ const Login = () => {
         {/* Login Button */}
         <button
           type="submit"
-          className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-semibold transition duration-300 shadow-md"
+          disabled={isSubmitting}
+          className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-semibold transition duration-300 shadow-md disabled:opacity-60"
         >
-          Login
+          {isSubmitting ? "Logging in..." : "Login"}
         </button>
 
         {/* Footer */}

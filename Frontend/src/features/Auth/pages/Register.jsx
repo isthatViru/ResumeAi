@@ -17,10 +17,13 @@ const Register = () => {
     setError("");
     try {
       await handleRegistration({ username, email, password });
-      // If registration is successful, redirect to home
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (err) {
-      setError("Registration failed. Please try again.");
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        "Registration failed. Please try again.";
+      setError(message);
     }
   };
      if(loading){
